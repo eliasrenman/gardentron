@@ -5,7 +5,7 @@ A Open source water gardening system
 ## Schematics
 
 Since some parts where not available it is not a exact match but the component setup should be more or less the same as the one I've used
-!(Schematic image)[https://github.com/eliasrenman/gardentron/blob/main/schematics/schematic.png]
+![Schematic image](https://github.com/eliasrenman/gardentron/blob/main/schematics/schematic.png)
 
 ## Parts list
 
