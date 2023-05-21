@@ -32,4 +32,18 @@ export class MoistureSocket extends SocketHandler {
       },
     });
   }
+
+  public getAllMoistures() {
+    return prisma.moistureValue.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        createdAt: true,
+        id: true,
+        name: true,
+        value: true,
+      },
+    });
+  }
 }
