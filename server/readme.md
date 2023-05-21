@@ -19,7 +19,7 @@ This project uses Express. An open source framework for building APIs and applic
 3. Start your app
 
     ```
-    yarn compile # Compile TypeScript source
+    yarn build # Compile TypeScript source
     yarn migrate # Run migrations to set up the database
     yarn start
     ```
