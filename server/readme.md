@@ -4,7 +4,7 @@
 
 ## About
 
-This project uses [Feathers](http://feathersjs.com). An open source framework for building APIs and real-time applications.
+This project uses Express. An open source framework for building APIs and applications.
 
 ## Getting Started
 
@@ -13,30 +13,17 @@ This project uses [Feathers](http://feathersjs.com). An open source framework fo
 
     ```
     cd path/to/server
-    npm install
+    yarn
     ```
 
 3. Start your app
 
     ```
-    npm run compile # Compile TypeScript source
-    npm run migrate # Run migrations to set up the database
-    npm start
+    yarn compile # Compile TypeScript source
+    yarn migrate # Run migrations to set up the database
+    yarn start
     ```
 
 ## Testing
 
-Run `npm test` and all your tests in the `test/` directory will be run.
-
-## Scaffolding
-
-This app comes with a powerful command line interface for Feathers. Here are a few things it can do:
-
-```
-$ npx feathers help                           # Show all commands
-$ npx feathers generate service               # Generate a new Service
-```
-
-## Help
-
-For more information on all the things you can do with Feathers visit [docs.feathersjs.com](http://docs.feathersjs.com).
+Run `yarn test` and all your tests in the `test/` directory will be run.
