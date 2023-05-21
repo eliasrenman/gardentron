@@ -1,0 +1,5 @@
+from micropython import const
+
+
+ssid = const("ssid")
+password = const("password")
