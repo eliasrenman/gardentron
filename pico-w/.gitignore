@@ -1,3 +1,4 @@
 .env
 env.json
 config.py
+__pycache__
