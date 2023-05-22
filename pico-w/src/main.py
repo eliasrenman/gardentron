@@ -1,8 +1,13 @@
 import socket
+from utime import sleep_ms
 from machine import Pin
 from config import ssid, password
 
 led = Pin("LED", Pin.OUT)
+
+led.value(1)
+sleep_ms(200)
+led.value(0)
 
 print("Successfully started pico...")
 
