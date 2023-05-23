@@ -18,13 +18,13 @@ def initalize_app():
 
 class Handler(ServerHandler):
 
-    @Endpoint('light/on', 'POST')
+    @Endpoint('/light/on', 'POST')
     def light_on(self):
         print("led on")
         led.value(1)
         return {"led": "on"}
 
-    @Endpoint('light/off', 'POST')
+    @Endpoint('/light/off', 'POST')
     def light_off(self):
         print("led off")
         led.value(0)

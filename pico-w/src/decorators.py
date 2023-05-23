@@ -34,8 +34,9 @@ class Endpoint:
 
             request: str = instance.__request  # type: ignore
             cl: socket.socket = instance.__cl  # type: ignore
-            # TODO: Improve find checker here to be more precise when dealing with requests.
-            if request.find(self.path) == -1 and self.path != '*' or request.find(self.method) == -1:
+
+            method, endpoint = split_request(request)
+            if endpoint != self.path and self.path != '*' or method != self.method:
                 return
             try:
                 val = function(instance, *args, **kwargs)
@@ -65,14 +66,16 @@ class ServerHandler(object):
                 self.__cl = cl
                 method_list = dir(self.__class__)
                 alreadyReturned = False
-                for endpoint in method_list:
+                for method in method_list:
 
-                    if endpoint.startswith('_') is True:
+                    if method.startswith('_') is True:
                         continue
 
-                    func = getattr(self.__class__, endpoint)
+                    func = getattr(self.__class__, method)
 
                     if not callable(func):
+                        continue
+                    if not is_decorated(func):
                         continue
 
                     result = func(self)
@@ -80,8 +83,8 @@ class ServerHandler(object):
                         alreadyReturned = True
                         break
                 if (not alreadyReturned):
-                    for endpoint in not_found_endpoints:
-                        result = endpoint()
+                    for method in not_found_endpoints:
+                        result = method()
                         if result:
                             break
 
@@ -112,3 +115,11 @@ class ServerHandler(object):
     @Endpoint('*', 'DELETE')
     def __delete_not_found(self):
         raise HttpError(404, {'status': 'Not Found'})
+
+
+def split_request(req: str):
+    return req.split(' ')[:2]
+
+
+def is_decorated(func):
+    return hasattr(func, '__wrapped__') or func.__name__ not in globals()
