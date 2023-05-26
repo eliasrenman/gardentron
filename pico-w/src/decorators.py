@@ -39,14 +39,39 @@ class Endpoint:
             if endpoint != self.path and self.path != '*' or method != self.method:
                 return
             try:
+                body = get_body(request)
+                if body:
+                    kwargs = dict(**kwargs, body=body)
+
                 val = function(instance, *args, **kwargs)
                 respond(cl, 200, val)
                 return val
             except HttpError as e:
                 respond(cl, e.status,
                         e.message)
+            except Exception as e:
+                print("Some other unkown error occured:", e)
 
         return wrapper
+
+
+"""
+Please note that this only supports content-type 'application/json'
+"""
+
+
+def get_body(request: str):
+    req = request.split("\r\n")
+    content_type_index = -10
+    for index in range(len(req)):
+        item = req[index]
+
+        if item.find("Content-Type") != -1:
+            if not item.find("application/json"):
+                return
+            content_type_index = index
+        if (content_type_index + 4) == index:
+            return item
 
 
 class ServerHandler(object):
