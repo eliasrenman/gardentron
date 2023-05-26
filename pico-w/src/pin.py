@@ -1,4 +1,4 @@
-from typing import Sized
+import json
 from machine import Pin, ADC
 from micropython import const
 
@@ -11,11 +11,11 @@ relays = [
     [Pin(2, mode=Pin.OUT), False]
 ]
 
-moisture_sensors = const([
+moisture_sensors = [
     ADC(Pin(28)),
     ADC(Pin(27)),
     ADC(Pin(26))
-])
+]
 
 
 min_moisture = const(0)
@@ -24,7 +24,7 @@ max_moisture = const(65535)
 
 def read_moisture_sensors():
     try:
-        data = map(read_moisture_sensor, moisture_sensors)
+        data = list(map(read_moisture_sensor, moisture_sensors))
         return {
             "status": "success",
             "message": "Successfully read moisture sensors",
@@ -41,7 +41,7 @@ def read_moisture_sensor(sensor: ADC):
     return (max_moisture-sensor.read_u16())*100/(max_moisture-min_moisture)
 
 
-def assert_index(array: Sized, index: int):
+def assert_index(array: list, index: int):
     return not (len(array) >= index or index < 0)
 
 
@@ -65,4 +65,4 @@ def try_switch_relay(relay_index: int, value: bool):
         # Then set the pin
         relays[index][0].value()
 
-    return {"status": "success", "message": "Successfully turned on relay", "data": map(lambda x: x[1], relays)}
+    return {"status": "success", "message": "Successfully turned on relay", "data": list(map(lambda x: x[1], relays))}
