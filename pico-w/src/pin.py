@@ -1,3 +1,4 @@
+import time
 import json
 from machine import Pin, ADC
 from micropython import const
@@ -16,15 +17,18 @@ moisture_sensors = [
     ADC(Pin(27)),
     ADC(Pin(26))
 ]
+moisture_pwr = Pin(22, mode=Pin.OUT)
 
-
-min_moisture = const(0)
+min_moisture = const(20800)
 max_moisture = const(65535)
 
 
 def read_moisture_sensors():
     try:
+        moisture_pwr.value(1)
+        time.sleep_ms(400)
         data = list(map(read_moisture_sensor, moisture_sensors))
+        moisture_pwr.value(0)
         return {
             "status": "success",
             "message": "Successfully read moisture sensors",
@@ -36,9 +40,16 @@ def read_moisture_sensors():
 
 
 def read_moisture_sensor(sensor: ADC):
-
+    reads = 3
+    val = 0
+    for i in range(reads):
+        val += sensor.read_u16()
+    val /= reads
     # Reads from sensor with the help of this tutorial: https://www.diyprojectslab.com/raspberry-pi-pico-with-moisture-sensor/
-    return (max_moisture-sensor.read_u16())*100/(max_moisture-min_moisture)
+    return {
+        "precentage": min([(max_moisture-val)*100/(max_moisture-min_moisture), 100]),
+        "read": val
+    }
 
 
 def assert_index(array: list, index: int):

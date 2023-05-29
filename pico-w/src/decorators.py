@@ -40,7 +40,7 @@ class Endpoint:
                 return
             try:
                 body = get_body(request)
-                if body:
+                if body is str and body != "":
                     kwargs = dict(**kwargs, body=body)
 
                 val = function(instance, *args, **kwargs)
@@ -71,6 +71,7 @@ def get_body(request: str):
                 return
             content_type_index = index
         if (content_type_index + 4) == index:
+
             return item
 
 

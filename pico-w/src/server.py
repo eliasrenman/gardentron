@@ -25,7 +25,7 @@ def initalize_app():
 class Handler(ServerHandler):
 
     @Endpoint('/moisture/read', 'GET')
-    def read_moisture():
+    def read_moisture(self):
         return read_moisture_sensors()
 
     @Endpoint('/relay/activate', 'POST')
