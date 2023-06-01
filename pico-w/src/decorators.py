@@ -40,17 +40,21 @@ class Endpoint:
                 return
             try:
                 body = get_body(request)
-                if body is str and body != "":
+
+                if isinstance(body, str) and body != "":
                     kwargs = dict(**kwargs, body=body)
 
                 val = function(instance, *args, **kwargs)
                 respond(cl, 200, val)
-                return val
+                return True
             except HttpError as e:
                 respond(cl, e.status,
                         e.message)
+                return True
             except Exception as e:
                 print("Some other unkown error occured:", e)
+                respond(cl, 500, {"status": "error", "message": e})
+                return True
 
         return wrapper
 
@@ -62,17 +66,25 @@ Please note that this only supports content-type 'application/json'
 
 def get_body(request: str):
     req = request.split("\r\n")
-    content_type_index = -10
+    content_length_index = 100
+    out = ""
     for index in range(len(req)):
         item = req[index]
 
         if item.find("Content-Type") != -1:
             if not item.find("application/json"):
                 return
-            content_type_index = index
-        if (content_type_index + 4) == index:
 
-            return item
+        if item.find("Content-Length") != -1:
+            content_length_index = index
+
+        if index > content_length_index:
+            out += item
+    out = out.replace("\n", "")
+    out = out.replace("\t", "")
+
+    if out != "":
+        return out
 
 
 class ServerHandler(object):
