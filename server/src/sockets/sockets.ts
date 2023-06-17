@@ -1,15 +1,24 @@
-import io, { Server, Socket } from "socket.io";
+import { Server, Socket } from "socket.io";
 
+/**
+ * Registers methods to socket.io server passed in constructors.
+ * All methods will be registered unless it is prefixed with "_".
+ */
 export abstract class SocketHandler {
-  constructor(private readonly server: Server) {
-    const ignoredMethods = ["connection"];
+  constructor(protected readonly server: Server) {
+    const ignoredMethods: string[] = ["constructor"];
 
-    for (const [key, value] of Object.entries(this)) {
-      if (typeof value === "function" && !ignoredMethods.includes(key)) {
-        this.server.on(key, value);
-      }
-    }
+    const prototype = Object.getPrototypeOf(this);
+    const methodNames = Object.getOwnPropertyNames(prototype).filter(
+      (name) => typeof prototype[name] === "function"
+    );
+
+    methodNames.forEach((methodName) => {
+      if (methodName.startsWith("_")) return;
+      if (ignoredMethods.includes(methodName)) return;
+
+      this.server.on(methodName, prototype[methodName]);
+    });
   }
-
   abstract connection(socket: Socket): void;
 }

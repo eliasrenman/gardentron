@@ -3,7 +3,7 @@ import { prisma } from "./prisma";
 
 startServer()
   .then(async () => {
-    await prisma.$disconnect();
+    await prisma.$connect();
   })
   .catch(async (e) => {
     console.error(e);

@@ -7,7 +7,12 @@ import { prisma } from "../prisma";
 export class MoistureSocket extends SocketHandler {
   constructor(server: Server) {
     super(server);
+
+    this.server.on("getMoisture", this.getMoisture);
+    this.server.on("getAllMoistures", this.getAllMoistures);
+
     emitter.on("moisture.updated", (...rows: any) => {
+      console.log("Moisture updated event listener called");
       server.emit("moisture.updated", rows);
     });
   }
