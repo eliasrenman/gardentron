@@ -3,6 +3,8 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { SocketHandler } from "./sockets";
 import { emitter } from "../eventemitter";
 import { prisma } from "../prisma";
+import { MositureRow } from "../cron";
+import { checkReadingAndEnqueue } from "../processors/moisture.processor";
 
 export class MoistureSocket extends SocketHandler {
   constructor(server: Server) {
@@ -11,9 +13,10 @@ export class MoistureSocket extends SocketHandler {
     this.server.on("getMoisture", this.getMoisture);
     this.server.on("getAllMoistures", this.getAllMoistures);
 
-    emitter.on("moisture.updated", (...rows: any) => {
+    emitter.on("moisture.updated", (...rows: MositureRow[]) => {
       console.log("Moisture updated event listener called");
       server.emit("moisture.updated", rows);
+      checkReadingAndEnqueue(rows);
     });
   }
 

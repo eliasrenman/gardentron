@@ -34,6 +34,8 @@ function readMoistureLevels() {
     });
 }
 
+export type MositureRow = Awaited<ReturnType<typeof insertRows>>[number];
+
 async function insertRows(data: MoistureResponse | undefined) {
   if (!data) {
     return [];
