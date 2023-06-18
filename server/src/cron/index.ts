@@ -24,7 +24,7 @@ export function registerCronjobs() {
   });
 }
 
-function readMoistureLevels() {
+export function readMoistureLevels() {
   return iotClient
     .get<MoistureResponse | undefined>("moisture/read")
     .catch((err: AxiosError) => {
