@@ -29,7 +29,7 @@ async function process(row: MositureRow) {
     // Enable water gate
     await toggleWater(index, true);
     // Check moisture level once per second for configured time
-    Promise.race([
+    await Promise.race([
       sleep(config.config.timeout * 1000),
       timeoutCb(row.name, row.value.toNumber()),
     ]);
