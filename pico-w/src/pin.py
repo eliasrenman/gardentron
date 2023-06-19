@@ -74,6 +74,6 @@ def try_switch_relay(relay_index: int, value: bool):
         # Update the relay state
         relays[index][1] = state
         # Then set the pin
-        relays[index][0].value()
+        relays[index][0].value(value)
 
     return {"status": "success", "message": "Successfully turned on relay", "data": list(map(lambda x: x[1], relays))}
