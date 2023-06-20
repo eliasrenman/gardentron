@@ -71,11 +71,11 @@ def get_body(request: str):
     for index in range(len(req)):
         item = req[index]
 
-        if item.find("Content-Type") != -1:
+        if item.lower().find("content-type") != -1:
             if not item.find("application/json"):
                 return
 
-        if item.find("Content-Length") != -1:
+        if item.lower().find("content-length") != -1:
             content_length_index = index
 
         if index > content_length_index:
@@ -83,6 +83,7 @@ def get_body(request: str):
     out = out.replace("\n", "")
     out = out.replace("\t", "")
 
+    print("Output", out)
     if out != "":
         return out
 

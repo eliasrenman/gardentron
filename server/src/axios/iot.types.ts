@@ -10,9 +10,5 @@ export type MoistureReading = {
 };
 
 export type MoistureResponse = {
-  data: {
-    sensor_0: MoistureReading;
-    sensor_1: MoistureReading;
-    sensor_2: MoistureReading;
-  };
+  data: MoistureReading[];
 };

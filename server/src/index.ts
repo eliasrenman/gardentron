@@ -1,5 +1,7 @@
 import { startServer } from "./server";
 import { prisma } from "./prisma";
+import { config } from "dotenv";
+config();
 
 startServer()
   .then(async () => {
