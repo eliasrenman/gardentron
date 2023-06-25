@@ -1,12 +1,12 @@
 import Queue from "queue";
 import { iotClient } from "../axios/iot.axios";
-import { config } from "../config";
+import { config, logger } from "../config";
 import { MositureRow, readMoistureLevels } from "../cron";
 import { emitter } from "../eventemitter";
 
 const queue = new Queue({ results: [], concurrency: 1 });
 
-queue.start((result) => console.log("Successfully started queue"));
+queue.start((result) => logger.info("Successfully started queue"));
 
 export function checkReadingAndEnqueue(rows: MositureRow[]) {
   rows
@@ -15,21 +15,19 @@ export function checkReadingAndEnqueue(rows: MositureRow[]) {
       // Read config for threshold values
       const threshold =
         config.config.moisture.thresholds.lower["sensor_" + row.name];
-      console.log(
-        row.value.toNumber() >= threshold,
-        row.value.toNumber(),
-        threshold,
-        config.config.moisture.thresholds.lower,
-        row.name
-      );
+
       // Conclude which sensors need watering.
       if (row.value.toNumber() <= threshold) {
-        console.log(`Enqueing ${row.name}`);
+        logger.info(`Enqueing ${row.name}`);
         // Enqueue relevant sensors
         queue.push((cb) =>
           process(row)
             .then((val) => cb && cb(undefined, val!))
             .catch((err) => cb && cb(err!))
+        );
+      } else {
+        logger.info(
+          `Will not enqueue ${row.name} Value at ${row.value.toNumber()}%`
         );
       }
     });
@@ -37,20 +35,20 @@ export function checkReadingAndEnqueue(rows: MositureRow[]) {
 }
 
 async function process(row: MositureRow) {
-  console.log("Started processing of", row.name);
+  logger.info("Started processing of", row.name);
   const index = row.name;
   try {
     // Enable water gate
     await toggleWater(index, true);
-    await sleep(10 * 1000);
+    await sleep(60 * 1000);
     // Check moisture level once per second for configured time
     await Promise.race([
       sleep(config.config.timeout * 1000),
       timeoutCb(row.name, row.value.toNumber()),
     ]);
   } catch (e) {
-    console.log(`Failed to processing of ${row.name}`);
-    console.log(e);
+    logger.info(`Failed to processing of ${row.name}`);
+    logger.info(e);
   } finally {
     // Finally turn of the water gate
     await toggleWater(index, false);
@@ -71,9 +69,9 @@ async function timeoutCb(name: string, initalRead: number): Promise<void> {
 
   const reading = data.data[+name].precentage;
   const lowerThreshold = initalRead + config.config.threshold;
-  console.log(lowerThreshold, reading);
+  logger.info(`Water reading at ${reading} minimum ${lowerThreshold} required`);
   if (lowerThreshold >= reading) {
-    console.log("Water low warning!");
+    logger.info("Water low warning!");
     // Trigger the low water alarm
     queue.end(Error("Water level low"));
     // Update the configuration
@@ -89,7 +87,7 @@ async function timeoutCb(name: string, initalRead: number): Promise<void> {
     initalRead +
     config.config.moisture.thresholds.upper[("sensor_" + name) as "sensor_0"];
   if (reading >= upperThreshold) {
-    console.log(
+    logger.info(
       `Successfully upped the moisture level for ${"sensor_" + name}`
     );
     return;
@@ -110,7 +108,7 @@ function toggleWater(index: string, on: boolean) {
       body: JSON.stringify({ relay: +index }),
     })
     .then(async (item) => {
-      console.log(`Successfully ${on ? "activate" : "deactivate"}d water gate`);
+      logger.info(`Successfully ${on ? "activate" : "deactivate"}d water gate`);
       return { on };
     });
 }

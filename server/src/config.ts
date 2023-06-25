@@ -1,6 +1,8 @@
 import { readFileSync, writeFileSync } from "fs";
 import { join, resolve } from "path";
 import { Configuration } from "./config.types";
+import { createLogger, format } from "winston";
+import { Console } from "winston/lib/winston/transports";
 
 export class Config<T extends Record<string, any>> {
   private _json!: T;
@@ -23,3 +25,24 @@ export class Config<T extends Record<string, any>> {
 export const config = new Config<Configuration>(
   resolve(join(__dirname, "../config.json"))
 );
+
+const alignColorsAndTime = format.combine(
+  format.colorize({
+    all: true,
+  }),
+  format.label({
+    label: "[LOGGER]",
+  }),
+  format.timestamp({
+    format: "YY-MM-DD HH:mm:ss",
+  }),
+  format.printf(
+    (info) =>
+      ` ${info.label}  ${info.timestamp}  ${info.level} : ${info.message}`
+  )
+);
+
+export const logger = createLogger({
+  format: alignColorsAndTime,
+  transports: [new Console({})],
+});

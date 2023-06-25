@@ -1,19 +1,19 @@
 {
   "water_low": false,
-  "timeout": 30,
+  "timeout": 120,
   "check_interval": 2.5,
   "threshold": 6,
   "moisture": {
     "thresholds": {
       "lower": {
-        "sensor_0": 20,
-        "sensor_1": 20,
-        "sensor_2": 20
+        "sensor_0": 50,
+        "sensor_1": 50,
+        "sensor_2": 50
       },
       "upper": {
-        "sensor_0": 70,
-        "sensor_1": 70,
-        "sensor_2": 70
+        "sensor_0": 90,
+        "sensor_1": 90,
+        "sensor_2": 90
       }
     }
   }

@@ -5,6 +5,7 @@ import { emitter } from "../eventemitter";
 import { prisma } from "../prisma";
 import { MositureRow } from "../cron";
 import { checkReadingAndEnqueue } from "../processors/moisture.processor";
+import { logger } from "../config";
 
 export class MoistureSocket extends SocketHandler {
   constructor(server: Server) {
@@ -14,7 +15,7 @@ export class MoistureSocket extends SocketHandler {
     this.server.on("getAllMoistures", this.getAllMoistures);
 
     emitter.on("moisture.updated", (...rows: MositureRow[]) => {
-      console.log("Moisture updated event listener called");
+      logger.info("Moisture updated event listener called");
       server.emit("moisture.updated", rows);
       checkReadingAndEnqueue(rows);
     });
@@ -23,7 +24,7 @@ export class MoistureSocket extends SocketHandler {
   connection(
     socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
   ): void {
-    console.log("Connection established with moisture handler.");
+    logger.info("Connection established with moisture handler.");
   }
 
   public getMoisture() {

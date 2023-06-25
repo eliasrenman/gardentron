@@ -4,24 +4,29 @@ import { MoistureResponse } from "../axios/iot.types";
 import { prisma } from "../prisma";
 import { emitter } from "../eventemitter";
 import { AxiosError } from "axios";
+import { logger } from "../config";
 
 export function registerCronjobs() {
-  cron.schedule("* * * * *", async () => {
-    console.log("Checking moisture levels");
+  cron.schedule(
+    "*/30 * * * *",
+    async () => {
+      logger.info("Checking moisture levels");
 
-    // Read moisture sensors
-    try {
-      const { data } = await readMoistureLevels();
-      const rows = await insertRows(data);
+      // Read moisture sensors
+      try {
+        const { data } = await readMoistureLevels();
+        const rows = await insertRows(data);
 
-      console.log("Successfully checked moisture levels");
-      if (rows.length === 0) return;
-      // Emit event
-      emitter.emit("moisture.updated", ...rows);
-    } catch (e) {
-      console.log(e);
-    }
-  });
+        logger.info("Successfully checked moisture levels");
+        if (rows.length === 0) return;
+        // Emit event
+        emitter.emit("moisture.updated", ...rows);
+      } catch (e) {
+        logger.info(e);
+      }
+    },
+    { runOnInit: true }
+  );
 }
 
 export function readMoistureLevels() {
