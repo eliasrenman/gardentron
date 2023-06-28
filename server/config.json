@@ -6,7 +6,7 @@
   "moisture": {
     "thresholds": {
       "lower": {
-        "sensor_0": 50,
+        "sensor_0": 60,
         "sensor_1": 50,
         "sensor_2": 50
       },

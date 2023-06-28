@@ -66,24 +66,8 @@ Please note that this only supports content-type 'application/json'
 
 def get_body(request: str):
     req = request.split("\r\n")
-    content_length_index = 100
-    out = ""
-    for index in range(len(req)):
-        item = req[index]
+    out = req[len(req) - 1]
 
-        if item.lower().find("content-type") != -1:
-            if not item.find("application/json"):
-                return
-
-        if item.lower().find("content-length") != -1:
-            content_length_index = index
-
-        if index > content_length_index:
-            out += item
-    out = out.replace("\n", "")
-    out = out.replace("\t", "")
-
-    print("Output", out)
     if out != "":
         return out
 
