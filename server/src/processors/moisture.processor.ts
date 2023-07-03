@@ -3,6 +3,7 @@ import { iotClient } from "../axios/iot.axios";
 import { config, logger } from "../config";
 import { MositureRow, readMoistureLevels } from "../cron";
 import { emitter } from "../eventemitter";
+import { AxiosError } from "axios";
 
 const queue = new Queue({ results: [], concurrency: 1 });
 
@@ -18,7 +19,7 @@ export function checkReadingAndEnqueue(rows: MositureRow[]) {
 
       // Conclude which sensors need watering.
       if (row.value.toNumber() <= threshold) {
-        logger.info(`Enqueing ${row.name}`);
+        logger.info(`Enqueing ${row.name} Value at ${row.value.toNumber()}%`);
         // Enqueue relevant sensors
         queue.push((cb) =>
           process(row)
@@ -40,15 +41,19 @@ async function process(row: MositureRow) {
   try {
     // Enable water gate
     await toggleWater(index, true);
-    await sleep(60 * 1000);
+    logger.info("Watering for 5 minutes before checking water level again");
+    await sleep(60 * 1000 * 5);
     // Check moisture level once per second for configured time
     await Promise.race([
-      sleep(config.config.timeout * 1000),
+      // sleep(config.config.timeout * 1000),
       timeoutCb(row.name, row.value.toNumber()),
     ]);
   } catch (e) {
     logger.info(`Failed to processing of ${row.name}`);
     logger.info(e);
+    if (e instanceof AxiosError) {
+      console.log(e.response?.data);
+    }
   } finally {
     // Finally turn of the water gate
     await toggleWater(index, false);
@@ -81,7 +86,7 @@ async function timeoutCb(name: string, initalRead: number): Promise<void> {
     };
     // Emit the the event that the confighas been updated
     emitter.emit("config.water_low");
-    return;
+    // return;
   }
   const upperThreshold =
     initalRead +
@@ -93,21 +98,26 @@ async function timeoutCb(name: string, initalRead: number): Promise<void> {
     return;
   }
   // If moisture level reaches upper threshold then cancel out of the checking loop
+  logger.info(
+    `Calling check water level in ${config.config.check_interval} seconds`
+  );
   await sleep(config.config.check_interval * 1000);
   return timeoutCb(name, initalRead);
 }
 
 function toggleWater(index: string, on: boolean) {
   return iotClient
-    .post(`/relay/${on ? "activate" : "deactivate"}`, {
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify({ relay: +index }),
-    })
+    .post(
+      `/relay/${on ? "activate" : "deactivate"}`,
+      { relay: +index },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
     .then(async (item) => {
+      console.log(item.status, item.data);
       logger.info(`Successfully ${on ? "activate" : "deactivate"}d water gate`);
       return { on };
     });

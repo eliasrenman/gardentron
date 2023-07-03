@@ -1,12 +1,12 @@
 {
-  "water_low": false,
+  "water_low": true,
   "timeout": 120,
-  "check_interval": 2.5,
-  "threshold": 6,
+  "check_interval": 60,
+  "threshold": 3.5,
   "moisture": {
     "thresholds": {
       "lower": {
-        "sensor_0": 60,
+        "sensor_0": 67,
         "sensor_1": 50,
         "sensor_2": 50
       },
