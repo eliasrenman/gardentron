@@ -2,10 +2,10 @@ import { Server, Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { SocketHandler } from "./sockets";
 import { emitter } from "../eventemitter";
-import { prisma } from "../prisma";
 import { MositureRow } from "../cron";
 import { checkReadingAndEnqueue } from "../processors/moisture.processor";
 import { logger } from "../config";
+import { db } from "../db/Databasehandler";
 
 export class MoistureSocket extends SocketHandler {
   constructor(server: Server) {
@@ -28,11 +28,8 @@ export class MoistureSocket extends SocketHandler {
   }
 
   public getMoisture() {
-    return prisma.moistureValue.findMany({
+    return db.moistureValue.findMany({
       take: 3,
-      orderBy: {
-        createdAt: "desc",
-      },
       select: {
         createdAt: true,
         id: true,
@@ -43,10 +40,7 @@ export class MoistureSocket extends SocketHandler {
   }
 
   public getAllMoistures() {
-    return prisma.moistureValue.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
+    return db.moistureValue.findMany({
       select: {
         createdAt: true,
         id: true,
