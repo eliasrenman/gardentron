@@ -4,7 +4,7 @@ import { MoistureResponse } from "../axios/iot.types";
 import { emitter } from "../eventemitter";
 import { AxiosError } from "axios";
 import { logger } from "../config";
-import { db } from "../db/Databasehandler";
+import { MoistureValueRow, db } from "../db/Databasehandler";
 
 export function registerCronjobs() {
   cron.schedule(
@@ -33,27 +33,29 @@ export function readMoistureLevels() {
   return iotClient
     .get<MoistureResponse | undefined>("moisture/read")
     .catch((err: AxiosError) => {
+      console.log(err);
       return {
         data: undefined,
       };
     });
 }
 
-export type MositureRow = Awaited<ReturnType<typeof insertRows>>[number];
-
-function insertRows(data: MoistureResponse | undefined) {
+function insertRows(data: MoistureResponse | undefined): MoistureValueRow[] {
   if (!data) {
     return [];
   }
-
-  return Object.entries(data.data).map(([key, value]) =>
-    db.moistureValue.create({
+  return Object.entries(data.data).map(([key, value]) => {
+    const result = db.moistureValue.create({
       data: {
         name: key,
         value: value.precentage,
         createdAt: new Date(),
       },
       select: { createdAt: true, id: true, name: true, value: true },
-    })
-  );
+    });
+    if ("changes" in result && "lastInsertRowid" in result) {
+      throw Error("Failed to insert row");
+    }
+    return result as MoistureValueRow;
+  });
 }

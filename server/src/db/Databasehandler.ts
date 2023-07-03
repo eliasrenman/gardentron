@@ -1,6 +1,7 @@
 import sqlite from "better-sqlite3";
 import { validate } from "node-cron";
 import { join, resolve } from "path";
+import { logger } from "../config";
 
 export class DatabaseHandler extends sqlite {
   public moistureValue: MositureValue;
@@ -12,7 +13,7 @@ export class DatabaseHandler extends sqlite {
   }
 }
 
-type MoistureValueRow = {
+export type MoistureValueRow = {
   name: string;
   value: number;
   createdAt: Date | string;
@@ -57,7 +58,7 @@ class MositureValue {
   public select(query: string, value: Record<keyof MoistureValueRow, boolean>) {
     const select = this.getSelectStatement(value);
     const sql = `SELECT ${select} FROM 'MoistureValue' ${query}`;
-    console.log("SQL SELECT STATEMENT:", sql);
+    logger.debug("SQL SELECT STATEMENT:", sql);
     return this.db.prepare(sql);
   }
 

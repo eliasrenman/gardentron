@@ -1,15 +1,16 @@
 import Queue from "queue";
 import { iotClient } from "../axios/iot.axios";
 import { config, logger } from "../config";
-import { MositureRow, readMoistureLevels } from "../cron";
+import { readMoistureLevels } from "../cron";
 import { emitter } from "../eventemitter";
 import { AxiosError } from "axios";
+import { MoistureValueRow } from "../db/Databasehandler";
 
 const queue = new Queue({ results: [], concurrency: 1 });
 
 queue.start((result) => logger.info("Successfully started queue"));
 
-export function checkReadingAndEnqueue(rows: MositureRow[]) {
+export function checkReadingAndEnqueue(rows: MoistureValueRow[]) {
   rows
     .sort((a, b) => +a.name)
     .forEach((row) => {
@@ -18,8 +19,8 @@ export function checkReadingAndEnqueue(rows: MositureRow[]) {
         config.config.moisture.thresholds.lower["sensor_" + row.name];
 
       // Conclude which sensors need watering.
-      if (row.value.toNumber() <= threshold) {
-        logger.info(`Enqueing ${row.name} Value at ${row.value.toNumber()}%`);
+      if (row.value <= threshold) {
+        logger.info(`Enqueing ${row.name} Value at ${row.value}%`);
         // Enqueue relevant sensors
         queue.push((cb) =>
           process(row)
@@ -27,15 +28,13 @@ export function checkReadingAndEnqueue(rows: MositureRow[]) {
             .catch((err) => cb && cb(err!))
         );
       } else {
-        logger.info(
-          `Will not enqueue ${row.name} Value at ${row.value.toNumber()}%`
-        );
+        logger.info(`Will not enqueue ${row.name} Value at ${row.value}%`);
       }
     });
   queue.start();
 }
 
-async function process(row: MositureRow) {
+async function process(row: MoistureValueRow) {
   logger.info("Started processing of", row.name);
   const index = row.name;
   try {
@@ -46,7 +45,7 @@ async function process(row: MositureRow) {
     // Check moisture level once per second for configured time
     await Promise.race([
       // sleep(config.config.timeout * 1000),
-      timeoutCb(row.name, row.value.toNumber()),
+      timeoutCb(row.name, row.value),
     ]);
   } catch (e) {
     logger.info(`Failed to processing of ${row.name}`);
@@ -117,7 +116,6 @@ function toggleWater(index: string, on: boolean) {
       }
     )
     .then(async (item) => {
-      console.log(item.status, item.data);
       logger.info(`Successfully ${on ? "activate" : "deactivate"}d water gate`);
       return { on };
     });

@@ -2,10 +2,10 @@ import { Server, Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { SocketHandler } from "./sockets";
 import { emitter } from "../eventemitter";
-import { MositureRow } from "../cron";
+
 import { checkReadingAndEnqueue } from "../processors/moisture.processor";
 import { logger } from "../config";
-import { db } from "../db/Databasehandler";
+import { MoistureValueRow, db } from "../db/Databasehandler";
 
 export class MoistureSocket extends SocketHandler {
   constructor(server: Server) {
@@ -14,7 +14,7 @@ export class MoistureSocket extends SocketHandler {
     this.server.on("getMoisture", this.getMoisture);
     this.server.on("getAllMoistures", this.getAllMoistures);
 
-    emitter.on("moisture.updated", (...rows: MositureRow[]) => {
+    emitter.on("moisture.updated", (...rows: MoistureValueRow[]) => {
       logger.info("Moisture updated event listener called");
       server.emit("moisture.updated", rows);
       checkReadingAndEnqueue(rows);
