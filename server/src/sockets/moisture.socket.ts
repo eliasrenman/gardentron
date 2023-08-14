@@ -2,8 +2,6 @@ import { Server, Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { SocketHandler } from "./sockets";
 import { emitter } from "../eventemitter";
-
-import { checkReadingAndEnqueue } from "../processors/moisture.processor";
 import { logger } from "../config";
 import { MoistureValueRow, db } from "../db/Databasehandler";
 
@@ -17,7 +15,7 @@ export class MoistureSocket extends SocketHandler {
     emitter.on("moisture.updated", (...rows: MoistureValueRow[]) => {
       logger.info("Moisture updated event listener called");
       server.emit("moisture.updated", rows);
-      checkReadingAndEnqueue(rows);
+      // enqueue(rows);
     });
   }
 

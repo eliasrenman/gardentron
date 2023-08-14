@@ -10,26 +10,27 @@ const queue = new Queue({ results: [], concurrency: 1 });
 
 queue.start((result) => logger.info("Successfully started queue"));
 
-export function checkReadingAndEnqueue(rows: MoistureValueRow[]) {
+export function enqueue(rows: MoistureValueRow[]) {
   rows
     .sort((a, b) => +a.name)
     .forEach((row) => {
       // Read config for threshold values
-      const threshold =
-        config.config.moisture.thresholds.lower["sensor_" + row.name];
+      // const threshold =
+      //   config.config.moisture.thresholds.lower["sensor_" + row.name];
 
-      // Conclude which sensors need watering.
-      if (row.value <= threshold) {
-        logger.info(`Enqueing ${row.name} Value at ${row.value}%`);
-        // Enqueue relevant sensors
-        queue.push((cb) =>
-          process(row)
-            .then((val) => cb && cb(undefined, val!))
-            .catch((err) => cb && cb(err!))
-        );
-      } else {
-        logger.info(`Will not enqueue ${row.name} Value at ${row.value}%`);
-      }
+      // // Conclude which sensors need watering.
+      // if (row.value <= threshold) {
+
+      logger.info(`Enqueing ${row.name} Value at ${row.value}%`);
+      // Enqueue relevant sensors
+      queue.push((cb) =>
+        process(row)
+          .then((val) => cb && cb(undefined, val!))
+          .catch((err) => cb && cb(err!))
+      );
+      // } else {
+      // logger.info(`Will not enqueue ${row.name} Value at ${row.value}%`);
+      // }
     });
   queue.start();
 }
@@ -40,13 +41,14 @@ async function process(row: MoistureValueRow) {
   try {
     // Enable water gate
     await toggleWater(index, true);
-    logger.info("Watering for 5 minutes before checking water level again");
-    await sleep(60 * 1000 * 5);
+    logger.info("Watering for 2 minutes");
+    await sleep(60 * 1000 * 2);
     // Check moisture level once per second for configured time
-    await Promise.race([
-      // sleep(config.config.timeout * 1000),
-      timeoutCb(row.name, row.value),
-    ]);
+    // await Promise.race([
+    //   // sleep(config.config.timeout * 1000),
+    //   timeoutCb(row.name, row.value),
+    // ]);
+    await toggleWater(index, true);
   } catch (e) {
     logger.info(`Failed to processing of ${row.name}`);
     logger.info(e);

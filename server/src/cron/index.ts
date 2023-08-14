@@ -5,6 +5,7 @@ import { emitter } from "../eventemitter";
 import { AxiosError } from "axios";
 import { logger } from "../config";
 import { MoistureValueRow, db } from "../db/Databasehandler";
+import { enqueue } from "../processors/moisture.processor";
 
 export function registerCronjobs() {
   cron.schedule(
@@ -24,6 +25,16 @@ export function registerCronjobs() {
       } catch (e) {
         logger.info(e);
       }
+    },
+    { runOnInit: true }
+  );
+  cron.schedule(
+    "0 19 * * *",
+    async () => {
+      logger.info("Scheduling watering");
+      const { data } = await readMoistureLevels();
+      const rows = insertRows(data);
+      enqueue(rows);
     },
     { runOnInit: true }
   );
